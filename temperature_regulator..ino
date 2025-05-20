@@ -16,12 +16,12 @@ const float highTemp = 47.0;   // Above this temperature is considered "hot" (da
 void setup() {
   Serial.begin(9600);  // Initialize serial communication at 9600 baud rate
   
-  // Set all control pins as outputs
-  pinMode(greenLed, OUTPUT);
-  pinMode(yellowLed, OUTPUT);
-  pinMode(redLed, OUTPUT);
-  pinMode(buzzer, OUTPUT);
-  pinMode(fan, OUTPUT);
+  // Set all component pins as outputs
+  pinMode(greenLed, OUTPUT); // Green light for low temperature
+  pinMode(yellowLed, OUTPUT); // Yellow for medium temperature
+  pinMode(redLed, OUTPUT); // Red for hot temperature
+  pinMode(buzzer, OUTPUT); // Buzzer to indicate hot temperature
+  pinMode(fan, OUTPUT); // The actual fan
   
   // Initialize all outputs to LOW/OFF state
   digitalWrite(greenLed, LOW);
