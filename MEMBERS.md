@@ -1,6 +1,6 @@
 # Addis Ababa Science and Technology University <br> College of Engineering <br> Department of  Software Engineering
 
-## Section B
+## Section B Group 7
 
 ## Embedded System - Course Project <br> Temperature Regulated Fan
 
