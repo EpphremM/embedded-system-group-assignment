@@ -1,29 +1,29 @@
 // Temperature Regulation System with LM35 (With Resistors)
 
 // Pin definitions
-const int tempPin = A0;       // LM35 output pin
-const int greenLed = 9;       // Green LED pin (PWM)
-const int yellowLed = 10;     // Yellow LED pin (PWM)
-const int redLed = 11;        // Red LED pin (PWM)
-const int buzzer = 5;         // Buzzer pin
-const int fan = 6;            // Fan control pin (PWM)
+const int tempPin = A0;       // Analog pin A0 connected to LM35 temperature sensor output
+const int greenLed = 9;       // Digital pin 9 for green LED (PWM capable)
+const int yellowLed = 10;     // Digital pin 10 for yellow LED (PWM capable)
+const int redLed = 11;        // Digital pin 11 for red LED (PWM capable)
+const int buzzer = 5;         // Digital pin 5 for buzzer
+const int fan = 6;            // Digital pin 6 for fan control (PWM capable)
 
-// Temperature thresholds
-const float lowTemp = 25.0;    // Below this is "cool"
-const float medTemp = 35.0;    // Between lowTemp and this is "normal"
-const float highTemp = 47.0;   // Above this is "hot"
+// Temperature thresholds (in Celsius)
+const float lowTemp = 25.0;    // Below this temperature is considered "cool"
+const float medTemp = 35.0;    // Normal temperature range (25-35°C)
+const float highTemp = 47.0;   // Above this temperature is considered "hot" (danger zone)
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600);  // Initialize serial communication at 9600 baud rate
   
-  // Set pin modes
+  // Set all control pins as outputs
   pinMode(greenLed, OUTPUT);
   pinMode(yellowLed, OUTPUT);
   pinMode(redLed, OUTPUT);
   pinMode(buzzer, OUTPUT);
   pinMode(fan, OUTPUT);
   
-  // Initially turn all outputs off
+  // Initialize all outputs to LOW/OFF state
   digitalWrite(greenLed, LOW);
   digitalWrite(yellowLed, LOW);
   digitalWrite(redLed, LOW);
@@ -34,47 +34,57 @@ void setup() {
 }
 
 void loop() {
-  // Read temperature from LM35
+  // Read raw analog value from temperature sensor (0-1023)
   int tempValue = analogRead(tempPin);
-  float temperature = (tempValue * 5.0 / 1024.0) * 100.0; // Convert to Celsius
   
+  // Convert analog reading to temperature in Celsius:
+  // 1. Convert to voltage (5V reference, 10-bit ADC)
+  // 2. LM35 outputs 10mV per °C, so multiply by 100 to get temperature
+  float temperature = (tempValue * 5.0 / 1024.0) * 100.0;
+  
+  // Print temperature to serial monitor for debugging
   Serial.print("Temperature: ");
   Serial.print(temperature);
   Serial.println(" °C");
   
-  // Control LEDs and fan based on temperature
+  // Temperature control logic:
+  
+  // COOL ZONE (below 25°C)
   if (temperature < lowTemp) {
-    // Cool temperature - green LED at half brightness
-    analogWrite(greenLed, 128);  // PWM at 50%
-    analogWrite(yellowLed, 0);
-    analogWrite(redLed, 0);
-    analogWrite(fan, 0);
-    noTone(buzzer);
+    analogWrite(greenLed, 128);  // Green LED at 50% brightness (PWM value 128/255)
+    analogWrite(yellowLed, 0);   // Yellow LED off
+    analogWrite(redLed, 0);      // Red LED off
+    analogWrite(fan, 0);         // Fan off
+    noTone(buzzer);              // Stop any alarm sound
   } 
+  
+  // NORMAL ZONE (25-35°C)
   else if (temperature >= lowTemp && temperature < medTemp) {
-    // Normal temperature - yellow LED at half brightness
-    analogWrite(greenLed, 0);
-    analogWrite(yellowLed, 128);
-    analogWrite(redLed, 0);
-    analogWrite(fan, 0);
-    noTone(buzzer);
+    analogWrite(greenLed, 0);    // Green LED off
+    analogWrite(yellowLed, 128); // Yellow LED at 50% brightness
+    analogWrite(redLed, 0);      // Red LED off
+    analogWrite(fan, 0);         // Fan off
+    noTone(buzzer);              // Stop any alarm sound
   } 
+  
+  // WARM ZONE (35-47°C)
   else if (temperature >= medTemp && temperature < highTemp) {
-    // Warm temperature - yellow LED at full brightness, fan at half speed
-    analogWrite(greenLed, 0);
-    analogWrite(yellowLed, 255);
-    analogWrite(redLed, 0);
-    analogWrite(fan, 128);
-    noTone(buzzer);
+    analogWrite(greenLed, 0);    // Green LED off
+    analogWrite(yellowLed, 255); // Yellow LED at full brightness
+    analogWrite(redLed, 0);      // Red LED off
+    analogWrite(fan, 128);       // Fan at 50% speed
+    noTone(buzzer);              // Stop any alarm sound
   } 
+  
+  // HOT ZONE (above 47°C) - ALARM STATE
   else {
-    // Hot temperature - red LED blinking, fan full speed, buzzer alarm
-    analogWrite(greenLed, 0);
-    analogWrite(yellowLed, 0);
-    analogWrite(redLed, millis() % 200 < 100 ? 255 : 0); // Blink
-    analogWrite(fan, 255);
-    tone(buzzer, 1000); // 1kHz alarm tone
+    analogWrite(greenLed, 0);    // Green LED off
+    analogWrite(yellowLed, 0);   // Yellow LED off
+    // Red LED blinking (on for 100ms, off for 100ms using millis() timer)
+    analogWrite(redLed, millis() % 200 < 100 ? 255 : 0);
+    analogWrite(fan, 255);       // Fan at full speed
+    tone(buzzer, 1000);          // Activate buzzer at 1kHz frequency
   }
   
-  delay(500); // Update twice per second
+  delay(500); // Wait 500ms (0.5 second) before next reading
 }
