@@ -94,7 +94,7 @@ Temperature: XX.X °C
 
 Adjust these constants in the code to modify temperature thresholds:
 
-```arduino
+```cpp
 const float lowTemp = 25.0;   // Cool range upper limit
 const float medTemp = 34.9;   // Normal range upper limit
 const float highTemp = 46.9;  // Danger threshold
